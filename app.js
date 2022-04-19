@@ -6,7 +6,6 @@ const weather=require('./weather');
 const app = express()
 const port = 3000;
 
-
 const publicDirectoryPath=path.join(__dirname,'/public');
 const viewDirectoryPath=path.join(__dirname,'/template');
 const partialDirectoryPath=path.join(viewDirectoryPath,'/partials')
