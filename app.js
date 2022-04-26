@@ -2,6 +2,7 @@ const express = require('express');
 const path = require("path");
 const hbs = require('hbs');
 const morgan = require('morgan');
+const cookieParser=require('cookie-parser');
 
 const app = express()
 const port = 3000;
@@ -18,8 +19,9 @@ app.use(express.static(publicDirectoryPath));
 app.set('views', viewDirectoryPath);
 hbs.registerPartials(partialDirectoryPath);
 
+app.use(cookieParser());
 app.use(morgan('dev'));
-app.use('/', indexRouter)
+app.use('/', indexRouter);
 
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`)

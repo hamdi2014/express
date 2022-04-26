@@ -3,8 +3,8 @@ const router=express.Router();
 const weatherRouter=require("./weather");
 const userRouter=require("./user");
 const taskRouter=require("./task");
-const authRouter=require('./auth')
-
+const authRouter=require('./auth');
+const isLogin=require('../tools/auth')
 
 router.get('/', (req, res) => {
     res.render('basePage',{
@@ -31,9 +31,9 @@ router.get('/', (req, res) => {
   });
   
   router.use('/weather',weatherRouter);
-  router.use('/users',userRouter);
-  router.use('/tasks',taskRouter);
   router.use('/auth',authRouter);
+  router.use('/users',isLogin,userRouter);
+  router.use('/tasks',isLogin,taskRouter);
 
   router.get('*', (req, res) => {
     res.status(404)

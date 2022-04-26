@@ -1,6 +1,6 @@
 const express=require("express");
 const router=express.Router();
-const weather=require('../weather');
+const weather=require('../tools/weather');
 
 const weatherPolicy=(req,res,next)=>{
     if(req.params.city==='london') return res.send(404)
