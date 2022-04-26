@@ -21,19 +21,14 @@ const User=mongoose.model("User",{
         type:String,
         minLength:4,
         trim:true,
+        unique:true,
+        lowercase:true,
         validate(value){
             if(value.toLowerCase().includes("admin") || value.toLowerCase().includes("root")){
                 throw new Error("userName includes invalid words!!!")
             }
             return true
         }
-        // validate:{
-        //     validator:function(userName){
-        //         return userName.length>4
-        //     },
-        //     message: props => `${props.value} is lower than 5 character!`
-        // }
-        // unique:true
     },
     email:{
         type:String,
@@ -43,6 +38,11 @@ const User=mongoose.model("User",{
             },
             message: props => `${props.value} is not email format!`
         },
+        required:true
+    },
+    password:{
+        type:String,
+        minLength:5,
         required:true
     }
 });

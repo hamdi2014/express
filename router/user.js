@@ -65,7 +65,8 @@ router.post('/',(req,res)=>{
         age:req.body.age,
         isActive:req.body.isActive===undefined ? true : req.body.isActive, 
         userName:req.body.userName,
-        email:req.body.email
+        email:req.body.email,
+        password:req.body.password
     });
     person.save().then((savedPerson)=>{
         res.send(savedPerson)

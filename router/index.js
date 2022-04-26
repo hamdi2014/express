@@ -2,7 +2,8 @@ const express=require("express");
 const router=express.Router();
 const weatherRouter=require("./weather");
 const userRouter=require("./user");
-const taskRouter=require("./task")
+const taskRouter=require("./task");
+const authRouter=require('./auth')
 
 
 router.get('/', (req, res) => {
@@ -32,6 +33,7 @@ router.get('/', (req, res) => {
   router.use('/weather',weatherRouter);
   router.use('/users',userRouter);
   router.use('/tasks',taskRouter);
+  router.use('/auth',authRouter);
 
   router.get('*', (req, res) => {
     res.status(404)
