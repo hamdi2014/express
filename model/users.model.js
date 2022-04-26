@@ -3,10 +3,12 @@ const valid=require("validator");
 
 const User=mongoose.model("User",{
     firstName:{
-        type:String
+        type:String,
+        required:true
     },
     lastName:{
-        type:String
+        type:String,
+        required:true
     },
     age:{
         type:Number,
@@ -15,10 +17,18 @@ const User=mongoose.model("User",{
     },
     isActive:{
         type:Boolean,
-        default:true
+        default:true,
+        required:true
+    },
+    role:{
+        type:String,
+        enum:["admin","client"],
+        default:"client",
+        required:true
     },
     userName:{
         type:String,
+        required:true,
         minLength:4,
         trim:true,
         unique:true,
