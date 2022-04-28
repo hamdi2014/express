@@ -2,35 +2,52 @@ const express=require("express");
 const router=express.Router();
 const Task=require('../model/tasks.model');
 
-router.get('/',(req,res)=>{
-    const query={};
-    if(req.query.complete==='true'){
-        query.isComplete=true;
-    }
-    if(req.query.complete==='false'){
-        query.isComplete=false;
-    }
-    Task.find(query).exec((err,tasks)=>{
-        if(err){
-            console.log(err);
-            res.sendStatus(500);
-        }else{
-            res.send(tasks);
+router.get('/',async(req,res)=>{
+    try {
+        const query={};
+        if(req.query.complete==='true'){
+            query.isComplete=true;
+        }
+        if(req.query.complete==='false'){
+            query.isComplete=false;
         };
-    })
+        const tasks=await Task.find(query);
+        res.send(tasks);
+    } catch (error) {
+        console.log(err);
+        return res.sendStatus(500);
+    }
+    // Task.find(query).exec((err,tasks)=>{
+    //     if(err){
+    //         console.log(err);
+    //         res.sendStatus(500);
+    //     }else{
+    //         res.send(tasks);
+    //     };
+    // })
 });
 
-router.get('/:id',(req,res)=>{
-    Task.findById(req.params.id).exec((err,task)=>{
-        if(err){
-            console.log(err)
-            return res.sendStatus(500)
-        }
+router.get('/:id',async(req,res)=>{
+    try {
+        const task=await Task.findById(req.params.id);
         if(!task){
             return res.sendStatus(404)
         }
         res.send(task);
-    })
+    } catch (error) {
+        console.log(error)
+        return res.sendStatus(500)
+    }
+    // Task.findById(req.params.id).exec((err,task)=>{
+    //     if(err){
+    //         console.log(err)
+    //         return res.sendStatus(500)
+    //     }
+    //     if(!task){
+    //         return res.sendStatus(404)
+    //     }
+    //     res.send(task);
+    // })
 });
 
 router.post('/',(req,res)=>{
