@@ -4,7 +4,7 @@ const Task=require('../model/tasks.model');
 
 router.get('/',async(req,res)=>{
     try {
-        const query={};
+        const query={user:req.user._id};
         if(req.query.complete==='true'){
             query.isComplete=true;
         }
@@ -17,86 +17,69 @@ router.get('/',async(req,res)=>{
         console.log(err);
         return res.sendStatus(500);
     }
-    // Task.find(query).exec((err,tasks)=>{
-    //     if(err){
-    //         console.log(err);
-    //         res.sendStatus(500);
-    //     }else{
-    //         res.send(tasks);
-    //     };
-    // })
 });
 
 router.get('/:id',async(req,res)=>{
     try {
-        const task=await Task.findById(req.params.id);
-        if(!task){
+        const task=await Task.find({user:req.user._id,_id:req.params.id});
+        if(!task[0]){
             return res.sendStatus(404)
         }
-        res.send(task);
+        res.json(task[0]);
     } catch (error) {
         console.log(error)
         return res.sendStatus(500)
     }
-    // Task.findById(req.params.id).exec((err,task)=>{
-    //     if(err){
-    //         console.log(err)
-    //         return res.sendStatus(500)
-    //     }
-    //     if(!task){
-    //         return res.sendStatus(404)
-    //     }
-    //     res.send(task);
-    // })
 });
 
-router.post('/',(req,res)=>{
-    const newTask=new Task({
-        title:req.body.title,
-        description:req.body.description,
-        createTime:req.body.createTime,
-        isComplete:req.body.isComplete
-    });
-    newTask.save().then((savedNewTask)=>{
-        res.send(savedNewTask)
-    }).catch((err)=>{
-        console.log(err);
-        res.status(500);
-        res.send(err.message)
-    })
-});
-
-router.put('/:id',(req,res)=>{
-    Task.findById(req.params.id).exec((err,task)=>{
-        if(err){
-            console.log(err)
-            return res.sendStatus(500)
-        }
-        if(!task){
-            return res.sendStatus(404)
-        }
-        req.body.title!==undefined && (task.title=req.body.title);
-        req.body.description!==undefined && (task.description=req.body.description);
-        task.createTime=Date.now();
-        req.body.isComplete!==undefined && (task.isComplete=req.body.isComplete);
-        task.save().then(savedTask=>{
-            res.json(savedTask)
-        })
-    })
-});
-
-router.delete('/:id',(req,res)=>{
-    Task.findByIdAndDelete(req.params.id).exec((err,deletedTask)=>{
-        if(err){
-            console.log(err)
-            return res.sendStatus(500)
+router.post('/',async(req,res)=>{
+    try {
+        const taskObj={
+            title:req.body.title,
+            user:req.user._id
         };
+        if(req.body.description!==undefined){
+            taskObj.description=req.body.description;
+        }
+        const newTask=new Task(taskObj);
+        await newTask.save()
+        res.send(newTask)
+    } catch (error) {
+        console.log(error);
+        return res.status(500);
+    }
+});
+
+router.put('/:id',async(req,res)=>{
+    try {
+        const update={}
+        req.body.description!==undefined && (update.description=req.body.description);
+        req.body.isComplete!==undefined && (update.isComplete=req.body.isComplete);
+        const updatedTask=await Task.findOneAndUpdate({
+            _id:req.params.id,
+            user:req.user._id
+        },update,{new:true});
+        if(!updatedTask){
+            return res.sendStatus(404);
+        }
+        res.json(updatedTask);
+    } catch (error) {
+        console.log(error);
+        return res.status(500);
+    }
+});
+
+router.delete('/:id',async(req,res)=>{
+    try {
+        const deletedTask=await Task.findOneAndDelete({_id:req.params.id,user:req.user._id});
         if(!deletedTask){
             return res.sendStatus(404)
         }
-        console.log(deletedTask);
         res.sendStatus(200);
-    })
+    } catch (error) {
+        console.log(err)
+        return res.sendStatus(500)
+    }
 });
 
 module.exports=router;

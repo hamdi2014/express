@@ -16,6 +16,11 @@ const Task=mongoose.model("Task",{
         type:Boolean,
         default:false,
         required:true
+    },
+    user:{
+        type:mongoose.ObjectId,
+        ref:'User',
+        required:true
     }
 });
 
