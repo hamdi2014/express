@@ -52,13 +52,14 @@ router.post('/',async(req,res)=>{
 
 router.put('/:id',async(req,res)=>{
     try {
-        const update={}
-        req.body.description!==undefined && (update.description=req.body.description);
-        req.body.isComplete!==undefined && (update.isComplete=req.body.isComplete);
+        const updates=Object.keys(req.body);
+        const allowedToUpdate=['description','isComplete'];
+        const isValidation=updates.every(update=>allowedToUpdate.includes(update));
+        if(!isValidation) return res.status(500).send("Invalid Request!!!");
         const updatedTask=await Task.findOneAndUpdate({
             _id:req.params.id,
             user:req.user._id
-        },update,{new:true});
+        },req.body,{new:true,runValidators: true});
         if(!updatedTask){
             return res.sendStatus(404);
         }

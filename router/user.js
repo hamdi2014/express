@@ -26,13 +26,13 @@ router.get('/:id', async (req,res)=>{
 
 router.put('/:id',async(req,res)=>{
     try {
-        const user=await User.findById(req.params.id);
-        if(!user) return res.sendStatus(404);
-        req.body.age!==undefined && (user.age=req.body.age);
-        req.body.firstName!==undefined && (user.firstName=req.body.firstName);
-        req.body.lastName!==undefined && (user.lastName=req.body.lastName);
-        req.body.isActive!==undefined && (user.isActive=req.body.isActive);
-        await user.save();
+        const updates=Object.keys(req.body);
+        const allowedToUpdate=['age','firstName','lastName','password'];
+        const isValidation=updates.every(update=>allowedToUpdate.includes(update));
+        if(!isValidation) return res.status(500).send("Invalid Request!!!");
+        const updatedUser=await User.findByIdAndUpdate(req.params.id,req.body,{new:true,runValidators: true});
+        if(!updatedUser) return res.sendStatus(404);
+        res.json(updatedUser)
     } catch (error) {
         console.log(error)
         return res.sendStatus(500)
