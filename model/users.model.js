@@ -1,7 +1,8 @@
 const mongoose=require("mongoose");
 const valid=require("validator");
+const bcrypt=require("bcrypt");
 
-const User=mongoose.model("User",{
+const userSchema=mongoose.Schema({
     firstName:{
         type:String,
         required:true
@@ -53,8 +54,34 @@ const User=mongoose.model("User",{
     password:{
         type:String,
         minLength:5,
+        trim:true,
         required:true
     }
 });
 
-module.exports=User;
+userSchema.pre('save',async function(next){
+    if(this.isModified('password')){
+        this.password=await bcrypt.hash(this.password,10)
+    };
+    next();
+});
+
+userSchema.pre('findOneAndUpdate',async function(next){
+    console.log(this._update);
+    if(this._update.password && this._update.password.trim().length>4){
+        this._update.password=await bcrypt.hash(this._update.password,10);
+    }else{
+        delete this._update.password;
+    }
+    next();
+});
+
+userSchema.statics.findForLogin=async function(userName,password){
+    const user= await this.findOne({userName});
+    if(!user)return;
+    const isMatchPassword=await bcrypt.compare(password,user.password);
+    if(!isMatchPassword) throw new Error("UserName and Password is not matched!!!");
+    return user
+}
+
+module.exports=mongoose.model('User',userSchema);

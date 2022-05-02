@@ -1,7 +1,8 @@
 const express=require("express");
 const router=express.Router();
 const User=require('../model/users.model');
-const ac=require('../tools/ac')
+const ac=require('../tools/ac');
+const bcrypt=require("bcrypt");
 
 router.get('/',ac.checkAdminRoleMiddleWare, async (req,res)=>{
     try {
@@ -30,9 +31,10 @@ router.put('/:id',async(req,res)=>{
         const allowedToUpdate=['age','firstName','lastName','password'];
         const isValidation=updates.every(update=>allowedToUpdate.includes(update));
         if(!isValidation) return res.status(500).send("Invalid Request!!!");
+        // if(req.body.password) req.body.password=await bcrypt.hash(req.body.password,10);
         const updatedUser=await User.findByIdAndUpdate(req.params.id,req.body,{new:true,runValidators: true});
         if(!updatedUser) return res.sendStatus(404);
-        res.json(updatedUser)
+        res.json(updatedUser);
     } catch (error) {
         console.log(error)
         return res.sendStatus(500)
