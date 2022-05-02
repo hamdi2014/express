@@ -59,6 +59,14 @@ const userSchema=mongoose.Schema({
     }
 });
 
+userSchema.methods.toJSON=function(){
+    const objectData=this.toObject();
+    delete objectData.__v;
+    delete objectData.isActive;
+    delete objectData.password;
+    return objectData;
+}
+
 userSchema.pre('save',async function(next){
     if(this.isModified('password')){
         this.password=await bcrypt.hash(this.password,10)
