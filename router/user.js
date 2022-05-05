@@ -1,13 +1,14 @@
 const express=require("express");
 const router=express.Router();
 const User=require('../model/users.model');
-const Task=require('../model/tasks.model')
 const ac=require('../tools/ac');
 const bcrypt=require("bcrypt");
 
 router.get('/',ac.checkAdminRoleMiddleWare, async (req,res)=>{
     try {
-        const users=await User.find();
+        const skip=req.query?.skip?Number(req.query.skip):0;
+        const limit=(req.query?.limit && Number(req.query.limit)<=10)?Number(req.query.limit):10;
+        const users=await User.find().skip(skip).limit(limit);
         res.json(users);
     } catch (error) {
         console.log(error);

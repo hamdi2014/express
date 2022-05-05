@@ -6,13 +6,19 @@ const ac=require('../tools/ac')
 
 router.get('/',async(req,res)=>{
     try {
+        const skip=req.query?.skip?Number(req.query.skip):0;
+        const limit=(req.query?.limit && Number(req.query.limit)<=5)?Number(req.query.limit):5;
         const match={};
         if(req.query?.complete){
             match.isComplete=req.query.complete==='true'
         }
         const userAndTasks=await req.user.populate({
             path:'tasks',
-            match
+            match,
+            options:{
+                skip,
+                limit
+            }
         });
         res.send(userAndTasks.tasks);
     } catch (error) {
@@ -23,6 +29,8 @@ router.get('/',async(req,res)=>{
 
 router.get('/all',ac.checkAdminRoleMiddleWare,async(req,res)=>{
     try {
+        const skip=req.query?.skip?Number(req.query.skip):0;
+        const limit=(req.query?.limit && Number(req.query.limit)<=5)?Number(req.query.limit):5;
         const match={};
         if(req.query?.complete){
             match.isComplete=req.query.complete==='true'
@@ -30,7 +38,7 @@ router.get('/all',ac.checkAdminRoleMiddleWare,async(req,res)=>{
         if(req.query?.userId){
             match.user=req.query.userId
         }
-        const tasks=await Task.find(match);
+        const tasks=await Task.find(match).skip(skip).limit(limit);
         res.send(tasks);
     } catch (error) {
         console.log(error);
