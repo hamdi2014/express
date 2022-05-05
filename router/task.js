@@ -1,20 +1,39 @@
 const express=require("express");
 const router=express.Router();
 const Task=require('../model/tasks.model');
+const User=require('../model/users.model')
+const ac=require('../tools/ac')
 
 router.get('/',async(req,res)=>{
     try {
-        const query={user:req.user._id};
-        if(req.query.complete==='true'){
-            query.isComplete=true;
+        const match={};
+        if(req.query?.complete){
+            match.isComplete=req.query.complete==='true'
         }
-        if(req.query.complete==='false'){
-            query.isComplete=false;
-        };
-        const tasks=await Task.find(query);
-        res.send(tasks);
+        const userAndTasks=await req.user.populate({
+            path:'tasks',
+            match
+        });
+        res.send(userAndTasks.tasks);
     } catch (error) {
         console.log(err);
+        return res.sendStatus(500);
+    }
+});
+
+router.get('/all',ac.checkAdminRoleMiddleWare,async(req,res)=>{
+    try {
+        const match={};
+        if(req.query?.complete){
+            match.isComplete=req.query.complete==='true'
+        }
+        if(req.query?.userId){
+            match.user=req.query.userId
+        }
+        const tasks=await Task.find(match);
+        res.send(tasks);
+    } catch (error) {
+        console.log(error);
         return res.sendStatus(500);
     }
 });
@@ -82,5 +101,7 @@ router.delete('/:id',async(req,res)=>{
         return res.sendStatus(500)
     }
 });
+
+
 
 module.exports=router;
