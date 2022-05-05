@@ -1,6 +1,8 @@
 const mongoose=require("mongoose");
 const valid=require("validator");
 const bcrypt=require("bcrypt");
+const Task=require("./tasks.model");
+const Session=require("./session.model");
 
 const userSchema=mongoose.Schema({
     firstName:{
@@ -84,12 +86,25 @@ userSchema.pre('findOneAndUpdate',async function(next){
     next();
 });
 
+userSchema.post('findOneAndDelete',async function(deletedUser){
+    await Task.deleteMany({user:deletedUser._id});
+    await Session.deleteMany({user:deletedUser._id});
+})
+
 userSchema.statics.findForLogin=async function(userName,password){
-    const user= await this.findOne({userName});
+    const user= await User.findOne({userName});
     if(!user)return;
     const isMatchPassword=await bcrypt.compare(password,user.password);
     if(!isMatchPassword) throw new Error("UserName and Password is not matched!!!");
     return user
 }
 
-module.exports=mongoose.model('User',userSchema);
+userSchema.virtual('tasks',{
+    ref:'Task',
+    localField:'_id',
+    foreignField:'user'
+})
+
+const User=mongoose.model('User',userSchema);
+
+module.exports=User;
