@@ -1,13 +1,15 @@
 const express=require("express");
 const router=express.Router();
 const Task=require('../model/tasks.model');
-const User=require('../model/users.model')
-const ac=require('../tools/ac')
+const User=require('../model/users.model');
+const queryTools=require('../tools/query');
+const ac=require('../tools/ac');
 
 router.get('/',async(req,res)=>{
     try {
         const skip=req.query?.skip?Number(req.query.skip):0;
         const limit=(req.query?.limit && Number(req.query.limit)<=5)?Number(req.query.limit):5;
+        const sort=req.query?.sort?queryTools.createSort(req.query.sort):{};
         const match={};
         if(req.query?.complete){
             match.isComplete=req.query.complete==='true'
@@ -17,7 +19,8 @@ router.get('/',async(req,res)=>{
             match,
             options:{
                 skip,
-                limit
+                limit,
+                sort
             }
         });
         res.send(userAndTasks.tasks);
@@ -31,6 +34,7 @@ router.get('/all',ac.checkAdminRoleMiddleWare,async(req,res)=>{
     try {
         const skip=req.query?.skip?Number(req.query.skip):0;
         const limit=(req.query?.limit && Number(req.query.limit)<=5)?Number(req.query.limit):5;
+        const sort=req.query?.sort?queryTools.createSort(req.query.sort):{};
         const match={};
         if(req.query?.complete){
             match.isComplete=req.query.complete==='true'
@@ -38,7 +42,7 @@ router.get('/all',ac.checkAdminRoleMiddleWare,async(req,res)=>{
         if(req.query?.userId){
             match.user=req.query.userId
         }
-        const tasks=await Task.find(match).skip(skip).limit(limit);
+        const tasks=await Task.find(match).skip(skip).limit(limit).sort(sort);
         res.send(tasks);
     } catch (error) {
         console.log(error);
