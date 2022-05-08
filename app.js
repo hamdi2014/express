@@ -3,9 +3,10 @@ const path = require("path");
 const hbs = require('hbs');
 const morgan = require('morgan');
 const cookieParser=require('cookie-parser');
+const appConfig=require("./configs/app")
 
 const app = express()
-const port = 3000;
+const port = appConfig.port;
 require('./db');
 const indexRouter = require("./router/index")
 
@@ -22,6 +23,14 @@ hbs.registerPartials(partialDirectoryPath);
 app.use(cookieParser());
 app.use(morgan('dev'));
 app.use('/', indexRouter);
+
+app.use((err,req,res,next)=>{
+    console.log(err);
+    res.status(err.status?err.status:500).json({
+        status:err.status?err.status:500,
+        message:err.message?err.message:"Something wrong! Please try again later..."
+    })
+})
 
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`)
