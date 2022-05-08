@@ -3,8 +3,12 @@ const uuid=require("uuid");
 const Session=require('../model/session.model');
 const router=express.Router();
 const User=require('../model/users.model');
+const RefreshToken=require("../model/refresh-token.model");
+const appConfig=require('../configs/app');
+const { isLoginBySession,createTokenForLogin,isLoginByJasonWebToken } = require("../tools/auth");
+const mongoose=require("mongoose");
 
-router.post('/login',async(req,res)=>{
+router.post('/login',async(req,res,next)=>{
     try {
         if(!req.body || !req.body.userName || !req.body.password){
             return res.sendStatus(400);
@@ -14,7 +18,7 @@ router.post('/login',async(req,res)=>{
             return res.sendStatus(404)
         };
         const session=uuid.v4();
-        res.cookie('session',session,{maxAge:1000*60*10});
+        res.cookie('session',session,{maxAge:appConfig.sessionTime});
         const newSession=new Session({
             session,
             user:user._id
@@ -22,8 +26,51 @@ router.post('/login',async(req,res)=>{
         await newSession.save()
         res.json(user)
     } catch (error) {
-        console.log(error);
-        return res.sendStatus(500);
+        next(error)
+    };
+});
+
+router.post('/logout',isLoginBySession,async(req,res,next)=>{
+    try {
+        if(req.user){
+            await Session.findOneAndRemove({user:req.user._id});
+            res.clearCookie("session");
+        }
+        res.sendStatus(200);;
+    } catch (error) {
+        next(error);
+    }
+})
+
+router.post('/login/jwt',async(req,res,next)=>{
+    try {
+        if(!req.body || !req.body.userName || !req.body.password){
+            throw {
+                status:400,
+                message:"Required fields are empty!",
+                originError: new Error("Login empty fields!")
+            }
+        };
+        const user=await User.findForLogin(req.body.userName,req.body.password);
+        await createTokenForLogin(user,res);
+        
+        res.json({user});
+    } catch (error) {
+        next(error)
+    };
+});
+
+router.post('/logout/jwt',isLoginByJasonWebToken,async(req,res,next)=>{
+    try {
+        if(req.user){
+            await RefreshToken.findOneAndRemove({user:req.user._id});
+            res.clearCookie("session");
+            res.removeHeader("authorization");
+            console.log(123)
+        };
+        res.sendStatus(200);
+    } catch (error) {
+        next(error)
     };
 });
 

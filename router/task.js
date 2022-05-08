@@ -7,6 +7,7 @@ const ac=require('../tools/ac');
 
 router.get('/',async(req,res)=>{
     try {
+        console.log('ok')
         const skip=req.query?.skip?Number(req.query.skip):0;
         const limit=(req.query?.limit && Number(req.query.limit)<=5)?Number(req.query.limit):5;
         const sort=req.query?.sort?queryTools.createSort(req.query.sort):{};
@@ -23,9 +24,10 @@ router.get('/',async(req,res)=>{
                 sort
             }
         });
+        console.log(userAndTasks.tasks)
         res.send(userAndTasks.tasks);
     } catch (error) {
-        console.log(err);
+        console.log(error);
         return res.sendStatus(500);
     }
 });
