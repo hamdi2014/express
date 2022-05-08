@@ -95,7 +95,10 @@ userSchema.statics.findForLogin=async function(userName,password){
     const user= await User.findOne({userName});
     if(!user)return;
     const isMatchPassword=await bcrypt.compare(password,user.password);
-    if(!isMatchPassword) throw new Error("UserName and Password is not matched!!!");
+    if(!isMatchPassword) throw {
+        status:400,
+        message:"UserName and Password is not matched!!!",
+    };
     return user
 }
 
