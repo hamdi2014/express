@@ -5,7 +5,8 @@ const userRouter=require("./user");
 const taskRouter=require("./task");
 const authRouter=require('./auth');
 const jwt=require('jsonwebtoken');
-const {isLoginBySession,isLoginByJasonWebToken}=require('../tools/auth')
+const {isLoginBySession,isLoginByJasonWebToken}=require('../tools/auth');
+const upload=require('../tools/upload').upload;
 
 router.get('/', (req, res) => {
     res.render('basePage',{
@@ -56,6 +57,10 @@ router.get('/test/verify/:token',(req,res)=>{
     res.json({verify});;
     
 });
+
+router.post('/upload',upload.single("myFile"),async(req,res)=>{
+    res.sendStatus(200)
+})
 
 router.get('*', (req, res) => {
 res.status(404)
